@@ -115,16 +115,16 @@ with tab2:
             
             if option == "일반 게임 결과":
                 c1, c2, c3 = st.columns(3)
-                with c1: w = st.selectbox("🥇 1등 (+7)", members, index=None, placeholder="선택")
-                with c2: s = st.selectbox("🥈 2등 (+5)", members, index=None, placeholder="선택")
-                with c3: t = st.selectbox("🥉 3등 (+3)", members, index=None, placeholder="선택")
+                with c1: w = st.selectbox("🥇 1등 (+6)", members, index=None, placeholder="선택")
+                with c2: s = st.selectbox("🥈 2등 (+4)", members, index=None, placeholder="선택")
+                with c3: t = st.selectbox("🥉 3등 (+2)", members, index=None, placeholder="선택")
                 
                 if st.button("결과 저장", type="primary"):
                     if w and s and t and len({w,s,t}) == 3:
                         with st.spinner("저장 중..."):
-                            add_log(w, 7, "1등")
-                            add_log(s, 5, "2등")
-                            add_log(t, 3, "3등")
+                            add_log(w, 6, "1등")
+                            add_log(s, 4, "2등")
+                            add_log(t, 2, "3등")
                         st.success("게임 결과 저장 완료!")
                         st.rerun() # 저장 후 즉시 갱신
                     else:
@@ -173,4 +173,5 @@ with tab3:
                 st.rerun()
             else:
                 st.error(msg)
+
 
