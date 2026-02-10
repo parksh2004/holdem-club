@@ -114,7 +114,7 @@ with tab2:
         if not members:
             st.warning("등록된 회원이 없습니다. '신규 회원' 탭에서 멤버를 추가해주세요!")
         else:
-            option = st.radio("작업 선택", ["일반 게임 결과", "리바인/구매", "출석 체크"], horizontal=True)
+            option = st.radio("작업 선택", ["일반 게임 결과", "리바인/구매", "출석 체크", "딜러"], horizontal=True)
             st.divider()
             
             if option == "일반 게임 결과":
@@ -145,6 +145,16 @@ with tab2:
                     for m in present:
                         add_log(m, 1, "출석")
                     st.success(f"{len(present)}명 출석 처리 완료!")
+            elif option == "딜러":
+                st.info("오늘 고생한 딜러에게 보너스 포인트를 줍니다. (출석 +1은 별도)")
+                dealer = st.selectbox("오늘의 딜러 (+3)", members, index=None, placeholder="딜러 선택")
+                
+                if st.button("딜러 보너스 지급", type="primary"):
+                    if dealer:
+                        add_log(dealer, 3, "딜러 보너스")
+                        st.success(f"{dealer}님에게 딜러 수고비(3p) 지급 완료!")
+                    else:
+                        st.warning("딜러를 선택해주세요.")                
 
 # [탭 3] 신규 회원 등록
 with tab3:
@@ -164,3 +174,4 @@ with tab3:
         else:
 
             st.warning("이름을 입력해주세요.")
+
