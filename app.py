@@ -16,12 +16,11 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 # 캐싱: 구글 연결 객체는 한 번만 만들어서 재사용
 @st.cache_resource
 def get_client():
-    # 1. 내 컴퓨터(로컬)에 key.json이 있으면 그걸 씀
+    # 1. 로컬 환경
     if os.path.exists(JSON_FILE):
         creds = ServiceAccountCredentials.from_json_keyfile_name(JSON_FILE, scope)
-    # 2. 서버(클라우드)에는 파일이 없으니 '비밀 금고(Secrets)'를 씀
+    # 2. 클라우드 환경
     else:
-        # st.secrets에서 정보를 가져옴
         key_dict = dict(st.secrets["gcp_service_account"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(key_dict, scope)
     
@@ -46,30 +45,37 @@ except Exception as e:
     st.error(f"구글 시트 연결 실패! 설정 파일이나 시트 이름을 확인해주세요.\n{e}")
     st.stop()
 
-# --- 2. 데이터 처리 함수 ---
+# --- 2. 데이터 처리 함수 (캐싱 적용!) ---
 
+# [중요] 60초(ttl=60) 동안은 구글 시트를 다시 읽지 않고 저장된 데이터를 씁니다.
+@st.cache_data(ttl=60)
+def load_data():
+    return sheet_log.get_all_records()
+
+# 멤버 목록은 잘 안 바뀌니 10분(600초) 캐싱
+@st.cache_data(ttl=600)
 def get_member_list():
-    """Members 시트에서 이름 목록을 가져옵니다."""
-    # 첫 번째 열(A열)을 다 가져오고, 첫 줄(헤더 '이름')은 제외
     members = sheet_members.col_values(1)
     if len(members) > 1:
-        return members[1:] # 헤더 제외하고 리턴
+        return members[1:]
     return []
 
+def clear_cache():
+    """데이터가 변경되었을 때 캐시를 비워주는 함수"""
+    st.cache_data.clear()
+
 def add_new_member(name):
-    """새로운 멤버를 Members 시트에 추가합니다."""
-    # 이미 있는지 확인
     current_members = get_member_list()
     if name in current_members:
         return False, "이미 등록된 이름입니다."
-    
     sheet_members.append_row([name])
+    clear_cache() # 멤버 추가했으니 캐시 비우기
     return True, f"{name}님 환영합니다! 등록 완료."
 
 def add_log(name, point, reason, note=""):
-    """기록용 시트에 로그 추가"""
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     sheet_log.append_row([date, name, point, reason, note])
+    clear_cache() # 기록 추가했으니 캐시 비우기
 
 # --- 3. 웹 앱 화면 (UI) ---
 st.title("♠️ 홀덤 동아리 랭킹 & 기록")
@@ -80,28 +86,25 @@ tab1, tab2, tab3 = st.tabs(["📊 랭킹 확인", "📝 게임 기록", "➕ 신
 # [탭 1] 랭킹 확인
 with tab1:
     st.header("실시간 랭킹")
-    if st.button("🔄 새로고침"):
-        st.cache_data.clear()
+    if st.button("🔄 랭킹 강제 새로고침"):
+        clear_cache()
         st.rerun()
 
-    data = sheet_log.get_all_records()
+    # 여기서 이제 직접 읽지 않고 load_data()를 통해 읽습니다.
+    data = load_data()
     df = pd.DataFrame(data)
     
     if not df.empty:
-        # 이름별 합계 계산 (동점이 있을 수 있으니 순위 처리)
         ranking = df.groupby("이름")["포인트변동"].sum().reset_index()
         ranking = ranking.sort_values(by="포인트변동", ascending=False)
-        
-        # 순위 매기기
         ranking["순위"] = range(1, len(ranking) + 1)
-        ranking = ranking[["순위", "이름", "포인트변동"]] # 컬럼 순서 정리
-        ranking.columns = ["순위", "이름", "총 포인트"]   # 컬럼명 깔끔하게
+        ranking = ranking[["순위", "이름", "포인트변동"]]
+        ranking.columns = ["순위", "이름", "총 포인트"]
         
-        # 1,2,3등 강조해서 보여주기
         st.dataframe(ranking, hide_index=True, use_container_width=True)
     else:
         st.info("아직 게임 기록이 없습니다.")
-
+        
 # [탭 2] 게임 기록 (관리자용)
 with tab2:
     st.header("관리자 모드")
@@ -174,4 +177,5 @@ with tab3:
         else:
 
             st.warning("이름을 입력해주세요.")
+
 
