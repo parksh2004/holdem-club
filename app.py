@@ -82,7 +82,7 @@ with tab1:
     st.header("실시간 랭킹")
     if st.button("🔄 새로고침"):
         st.cache_data.clear()
-        st.experimental_rerun()
+        st.rerun()
 
     data = sheet_log.get_all_records()
     df = pd.DataFrame(data)
@@ -158,8 +158,9 @@ with tab3:
             success, msg = add_new_member(new_name)
             if success:
                 st.success(msg)
-                st.experimental_rerun() # 화면 새로고침해서 명단 갱신
+                st.rerun() # 화면 새로고침해서 명단 갱신
             else:
                 st.error(msg)
         else:
+
             st.warning("이름을 입력해주세요.")
