@@ -80,7 +80,7 @@ tab1, tab2, tab3 = st.tabs(["📊 랭킹 확인", "📝 관리자 모드", "➕ 
 # [탭 1] 랭킹 확인
 with tab1:
     st.header("실시간 랭킹")
-    if st.button("🔄 랭킹 강제 새로고침"):
+    if st.button("🔄 랭킹 새로고침"):
         clear_cache()
         st.rerun()
 
@@ -173,3 +173,4 @@ with tab3:
                 st.rerun()
             else:
                 st.error(msg)
+
