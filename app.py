@@ -86,7 +86,7 @@ tab1, tab2, tab3 = st.tabs(["📊 랭킹 확인", "📝 게임 기록", "➕ 신
 # [탭 1] 랭킹 확인
 with tab1:
     st.header("실시간 랭킹")
-    if st.button("🔄 랭킹 강제 새로고침"):
+    if st.button("🔄 랭킹 새로고침"):
         clear_cache()
         st.rerun()
 
@@ -177,5 +177,6 @@ with tab3:
         else:
 
             st.warning("이름을 입력해주세요.")
+
 
 
