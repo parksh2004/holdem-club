@@ -73,9 +73,9 @@ def add_log(name, point, reason, note=""):
     clear_cache() # 기록 추가했으니 캐시 비우기
 
 # --- 3. 웹 앱 화면 (UI) ---
-st.title("♠️ 홀덤 동아리 랭킹 & 기록")
+st.title("♠️ 보드라이프 홀덤 포인트 & 기록")
 
-tab1, tab2, tab3 = st.tabs(["📊 랭킹 확인", "📝 관리자 모드", "➕ 신규 회원"])
+tab1, tab2, tab3 = st.tabs(["📊 랭킹 및 포인트 확인", "📝 관리자 모드", "➕ 신규 회원"])
 
 # [탭 1] 랭킹 확인
 with tab1:
